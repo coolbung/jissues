@@ -26,25 +26,30 @@
 
 {% block content %}
 
-    <div class="row-fluid">
+    <div class="row">
 
-        <div class="span4">
-            <ul class="well nav nav-list affix">
+        <div class="col-md-3">
+            <div class="affix">
+            <ul class="well nav nav-list">
                 {% for group, fields in config %}
                     <li class="">
                         <a href="#{{ group }}">{{ group|title }}</a>
                     </li>
                 {% endfor %}
             </ul>
+            </div>
         </div>
 
-        <div class="span8">
+        <div class="col-md-9">
 
+                <div data-spy="affix--X">
             <h2>Edit Configuration</h2>
 
-            <form method="post" action="{{ uri.base.path }}saveconfig" class="form-horizontal" name="configForm">
+            <form method="post" action="{{ uri.base.path }}saveconfig" class="form-horizontal" name="configForm"
+                  >
                 {% for group, fields in config %}
-                    <fieldset id="{{ group }}">
+                <div id="{{ group }}">
+                    <fieldset id="x{{ group }}">
                         <legend>{{ group|title }}</legend>
                         {% for name, value in fields %}
                             {% if value[0] is not defined %}
@@ -68,10 +73,20 @@
                             {% endif %}
                         {% endfor %}
                     </fieldset>
+                    </div>
                 {% endfor %}
             </form>
+                </div>
 
         </div>
 
     </div>
+{% endblock %}
+
+{% block JavaScriptBottom %}
+
+    {{ parent() }}
+
+    <script src="{{ uri.base.path }}vendor/bootstrap/js/affix.js"></script>
+
 {% endblock %}
