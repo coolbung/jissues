@@ -343,12 +343,24 @@ class TrackerDebugger implements LoggerAwareInterface
 		</style>
 		';
 
-		$navigation[] = '<div class="navbar navbar-fixed-bottom" id="debugBar">';
+		$navigation[] = '<nav class="navbar navbar-inverse navbar-fixed-bottom debug">';
 
-		$navigation[] = '<a class="brand" href="#top" class="hasTooltip" title="' . g11n3t('Go up') . '">'
-			. '&nbsp;<i class="icon icon-joomla"></i></a>';
+		//$navigation[] = '<a class="brand" href="#top" class="hasTooltip" title="' . g11n3t('Go up') . '">'
+		//	. '&nbsp;<i class="icon icon-joomla"></i>J</a>';
 
-		$navigation[] = '<ul class="nav">';
+		$navigation[] = '<div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand hasTooltip" title="Go Up" href="#top">
+    <span class="glyphicon glyphicon-arrow-up"></span>
+    </a>
+  </div>';
+
+		$navigation[] = '<ul class="nav navbar-nav">';
 
 		if ($this->application->get('debug.database'))
 		{
@@ -356,8 +368,8 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . sprintf(g11n4t('One database query', '%d database queries', $count), $count) . '">'
-				. '<a href="#dbgDatabase"><i class="icon icon-database"></i> '
-				. $this->getBadge($count)
+				. '<a href="#dbgDatabase"><i class="glyphicon glyphicon-list"></i> '
+				. $this->getLabel($count)
 				. '</a></li>';
 		}
 
@@ -367,17 +379,17 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . g11n3t('Profile') . '">'
-				. '<a href="#dbgProfile"><i class="icon icon-lightning"></i> '
-				. sprintf('%s MB', $this->getBadge(number_format($profile->peak / 1000000, 2)))
+				. '<a href="#dbgProfile"><i class="glyphicon glyphicon-fire"></i> '
+				. sprintf('%s MB', $this->getLabel(number_format($profile->peak / 1000000, 2)))
 				. ' '
-				. sprintf('%s ms', $this->getBadge(number_format($profile->time * 1000)))
+				. sprintf('%s ms', $this->getLabel(number_format($profile->time * 1000)))
 				. '</a></li>';
 		}
 
 		if ($this->application->get('debug.language'))
 		{
 			$info = $this->getLanguageStringsInfo();
-			$badge = $this->getBadge($info->untranslateds, array(1 => 'badge-warning'));
+			$badge = $this->getLabel($info->untranslateds, array(1 => 'label-warning'));
 			$count = count(g11n::getEvents());
 
 			$navigation[] = '<li class="hasTooltip"'
@@ -386,14 +398,14 @@ class TrackerDebugger implements LoggerAwareInterface
 							'One untranslated string of %2$d', '%1$d untranslated strings of %2$d', $info->untranslateds
 						), $info->untranslateds, $info->total
 					) . '">'
-				. '<a href="#dbgLanguageStrings"><i class="icon icon-question-sign"></i>  '
-				. $badge . '/' . $this->getBadge($info->total)
+				. '<a href="#dbgLanguageStrings"><i class="glyphicon glyphicon-question-sign"></i>  '
+				. $badge . '/' . $this->getLabel($info->total)
 				. '</a></li>';
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . sprintf(g11n4t('One language file loaded', '%d language files loaded', $count), $count) . '">'
-				. '<a href="#dbgLanguageFiles"><i class="icon icon-file-word"></i> '
-				. $this->getBadge($count)
+				. '<a href="#dbgLanguageFiles"><i class="glyphicon glyphicon-book"></i> '
+				. $this->getLabel($count)
 				. '</a></li>';
 		}
 
@@ -406,19 +418,19 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . g11n3t('User') . '">'
-				. '<a href="#dbgUser"><i class="icon icon-user"></i> <span class="badge">'
+				. '<a href="#dbgUser"><i class="glyphicon glyphicon-user"></i> <span class="label label-default">'
 				. ($user && $user->username ? $user->username : g11n3t('Guest'))
 				. '</span></a></li>';
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . g11n3t('Project') . '">'
-				. '<a href="#dbgProject"><i class="icon icon-cube"></i> <span class="badge">'
+				. '<a href="#dbgProject"><i class="glyphicon glyphicon-tag"></i> <span class="badge">'
 				. $title
 				. '</span></a></li>';
 		}
 
 		$navigation[] = '</ul>';
-		$navigation[] = '</div>';
+		$navigation[] = '</nav>';
 
 		return $navigation;
 	}
@@ -771,7 +783,7 @@ class TrackerDebugger implements LoggerAwareInterface
 	 *
 	 * @return string
 	 */
-	private function getBadge($count, array $options = array())
+	private function getLabel($count, array $options = array())
 	{
 		$class = '';
 
@@ -783,6 +795,8 @@ class TrackerDebugger implements LoggerAwareInterface
 			}
 		}
 
-		return '<span class="badge' . $class . '">' . $count . '</span>';
+		$class = $class ? : ' label-default';
+
+		return '<span class="label' . $class . '">' . $count . '</span>';
 	}
 }
