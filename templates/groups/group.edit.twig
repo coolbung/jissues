@@ -156,40 +156,48 @@
                     <div class="row">
                         <div class="span3">
                             <label for="can_view" class="btn span12">
-                                <i class="icon-eye-2"></i>
+                                <i class="glyphicon glyphicon-eye-open"></i>
                                 {{ "View"|_ }}
                             </label>
-                            <div class="make-switch span12" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>">
+                            <div class="make-switch span12" data-on="success" data-off="danger"
+                                 data-on-label="<i class='glyphicon glyphicon-lock'></i>"
+                                 data-off-label="<i class='glyphicon glyphicon-lock'></i>">
                                 <input type="checkbox" {{ group.can_view ? "checked='checked'" : "" }}
                                        id="can_view" name="group[can_view]"/>
                             </div>
                         </div>
                         <div class="span3">
                             <label for="can_create" class="btn span12">
-                                <i class="icon-plus-2"></i>
+                                <i class="glyphicon glyphicon-plus"></i>
                                 {{ "Create"|_ }}
                             </label>
-                            <div class="make-switch span12" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>">
+                            <div class="make-switch span12" data-on="success" data-off="danger"
+                                 data-on-label="<i class='glyphicon glyphicon-lock'></i>"
+                                 data-off-label="<i class='glyphicon glyphicon-lock'></i>">
                             <input type="checkbox" {{ group.can_create ? "checked='checked'" : "" }}
                                    id="can_create" name="group[can_create]"/>
                             </div>
                         </div>
                         <div class="span3">
                             <label for="can_edit" class="btn span12">
-                                <i class="icon-pencil"></i>
+                                <i class="glyphicon glyphicon-pencil"></i>
                                 {{ "Edit"|_ }}
                             </label>
-                            <div class="make-switch span12" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>">
+                            <div class="make-switch span12" data-on="success" data-off="danger"
+                                 data-on-label="<i class='glyphicon glyphicon-lock'></i>"
+                                 data-off-label="<i class='glyphicon glyphicon-lock'></i>">
                             <input type="checkbox" {{ group.can_edit ? "checked='checked'" : "" }}
                                    id="can_edit" name="group[can_edit]"/>
                             </div>
                         </div>
                         <div class="span3">
                             <label for="can_manage" class="btn span12">
-                                <i class="icon-user-3"></i>
+                                <i class="glyphicon glyphicon-user"></i>
                                 {{ "Manage"|_ }}
                             </label>
-                            <div class="make-switch span12" data-on="success" data-off="danger" data-on-label="<i class='icon-unlocked icon-white'></i>" data-off-label="<i class='icon-locked'></i>">
+                            <div class="make-switch span12" data-on="success" data-off="danger"
+                                 data-on-label="<i class='glyphicon glyphicon-lock'></i>"
+                                 data-off-label="<i class='glyphicon glyphicon-lock'></i>">
                             <input type="checkbox" {{ group.can_manage ? "checked='checked'" : "" }}
                                    id="can_manage" name="group[can_manage]"/>
                             </div>
