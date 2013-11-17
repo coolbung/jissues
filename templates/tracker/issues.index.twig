@@ -44,12 +44,12 @@
                        title="{{ translate('Filter the list by summary or description.') }}"
                        placeholder="{{ translate('Filter the list by summary or description.') }}"/>
                 <button class="btn tip hasTooltip" type="submit" title="{{ translate('Submit search') }}">
-                    <span class="icon-search"></span></button>
+                    <span class="glyphicon glyphicon-search"></span></button>
             </div>
             <div class="btn-group pull-left">
                 <button class="btn tip hasTooltip" type="button"
                         onclick="jQuery('#filter-search').val('');document.issuesForm.submit();"
-                        title="{{ translate('Clear search') }}"><span class="icon-remove"></span></button>
+                        title="{{ translate('Clear search') }}"><span class="glyphicon glyphicon-remove"></span></button>
             </div>
             <div class="pull-right btn-group">
                 {{ filters.sort(state.get('filter.sort'), 'filter-sort', 'input-medium-180') }}
@@ -194,8 +194,7 @@
 
     {{ parent() }}
 
-    <script src="{{ uri.base.path }}vendor/bootstrap/js/bootstrap-tooltip.js"></script>
-    <script src="{{ uri.base.path }}vendor/bootstrap/js/bootstrap-popover.js"></script>
+    <script src="{{ uri.base.path }}vendor/bootstrap/js/popover.js"></script>
     <script src="{{ uri.base.path }}vendor/blueimp-tmpl/js/tmpl{{ jdebug ? "" : ".min" }}.js"></script>
     <script src="{{ uri.base.path }}jtracker/blueimp-tmpl/js/jtracker-tmpl{{ jdebug ? "" : ".min" }}.js"></script>
 
