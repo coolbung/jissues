@@ -5,9 +5,9 @@
   "description": "JTracker project",
   "license": "GPL",
   "dependencies": {
-    "jquery": "1.9.1",
+    "jquery": "2.0.3",
     "jquery-validation": "1.11.2",
-    "bootstrap": "2.3.2",
+    "bootstrap": "3.0.2",
     "bootstrap-switch": "v1.8",
     "markitup": "1.1.14",
     "blueimp-tmpl": "2.4.0"
