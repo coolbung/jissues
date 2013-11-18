@@ -27,13 +27,13 @@ class IconsHtmlView extends AbstractTrackerHtmlView
 	 */
 	public function render()
 	{
-		$lines = file(JPATH_THEMES . '/css/template.css');
+		$lines = file(JPATH_THEMES . '/vendor/bootstrap/less/glyphicons.less');
 
 		$icons = array();
 
 		foreach ($lines as $line)
 		{
-			if (preg_match('/.(icon-[a-z0-9\-]+)/', $line, $matches))
+			if (preg_match('/.(glyphicon-[a-z0-9\-]+)/', $line, $matches))
 			{
 				if ('icon-bar' == $matches[1])
 				{

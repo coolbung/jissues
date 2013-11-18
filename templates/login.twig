@@ -1,0 +1,38 @@
+{# Copyright (C) 2013 - 2013 Open Source Matters, Inc. All rights reserved. #}
+{# GNU General Public License version 2 or later; see LICENSE.txt#}
+
+{% if user.id %}
+    <ul class="nav navbar-nav">
+
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;">
+            {{ avatar(user.username, 20)|raw }}
+            &nbsp;
+            {{ user.username }}
+            <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            {% if user.isAdmin %}
+                <li class="nav-header"><i class="icon-user-3"></i> {{ "Admin"|_ }}</li>
+            {% endif %}
+            <li>
+                <a href="{{ uri.base.path }}user">
+                    <i class="glyphicon glyphicon-user"></i>
+                    {{ "Profile"|_ }}
+                </a>
+            </li>
+            <li class="divider"><span></span></li>
+            <li>
+                <a href="{{ uri.base.path }}logout">
+                    <i class="icon-lock"></i>
+                    {{ "Logout"|_ }}
+                </a>
+            </li>
+        </ul>
+    </li>
+    </ul>
+{% else %}
+        <a class="btn btn-success navbar-btn" href="{{ loginUrl }}">
+            {{ "Login with GitHub"|_ }}
+        </a>
+{% endif %}

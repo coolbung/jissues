@@ -9,9 +9,9 @@
 
     <div class="row">
     {% for icon in icons %}
-        <div class="span3 well well-small">
-            <i style="font-size: 16px;" class="{{ icon }}"></i>
-            &nbsp;{{ icon }}
+        <div class="col-xs-1 well well-small">
+            <i style="font-size: 16px;" class="glyphicon {{ icon }}"></i>
+            {{ icon }}
         </div>
     {% endfor %}
     </div>

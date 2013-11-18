@@ -183,38 +183,3 @@ or "devdox" == firstPart
 
     </ul>
 </li>
-
-{% if user.id %}
-    <li class="dropdown pull-right">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;">
-            {{ avatar(user.username, 20)|raw }}
-            &nbsp;
-            {{ user.username }}
-            <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-            {% if user.isAdmin %}
-                <li class="nav-header"><i class="icon-user-3"></i> {{ "Admin"|_ }}</li>
-            {% endif %}
-            <li>
-                <a href="{{ uri.base.path }}user">
-                    <i class="glyphicon glyphicon-user"></i>
-                    {{ "Profile"|_ }}
-                </a>
-            </li>
-            <li class="divider"><span></span></li>
-            <li>
-                <a href="{{ uri.base.path }}logout">
-                    <i class="icon-lock"></i>
-                    {{ "Logout"|_ }}
-                </a>
-            </li>
-        </ul>
-    </li>
-{% else %}
-    <li>
-        <a class="btn-success" href="{{ loginUrl }}">
-            {{ "Login with GitHub"|_ }}
-        </a>
-    </li>
-{% endif %}
