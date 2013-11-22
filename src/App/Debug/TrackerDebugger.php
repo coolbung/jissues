@@ -356,7 +356,7 @@ class TrackerDebugger implements LoggerAwareInterface
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand hasTooltip" title="Go Up" href="#top">
-    <span class="glyphicon glyphicon-arrow-up"></span>
+    <span class="fa fa-bug"></span>
     </a>
   </div>';
 
@@ -368,7 +368,7 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . sprintf(g11n4t('One database query', '%d database queries', $count), $count) . '">'
-				. '<a href="#dbgDatabase"><i class="glyphicon glyphicon-list"></i> '
+				. '<a href="#dbgDatabase"><i class="fa fa-hdd-o"></i> '
 				. $this->getLabel($count)
 				. '</a></li>';
 		}
@@ -379,7 +379,7 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . g11n3t('Profile') . '">'
-				. '<a href="#dbgProfile"><i class="glyphicon glyphicon-fire"></i> '
+				. '<a href="#dbgProfile"><i class="fa fa-bolt"></i> '
 				. sprintf('%s MB', $this->getLabel(number_format($profile->peak / 1000000, 2)))
 				. ' '
 				. sprintf('%s ms', $this->getLabel(number_format($profile->time * 1000)))
@@ -398,13 +398,13 @@ class TrackerDebugger implements LoggerAwareInterface
 							'One untranslated string of %2$d', '%1$d untranslated strings of %2$d', $info->untranslateds
 						), $info->untranslateds, $info->total
 					) . '">'
-				. '<a href="#dbgLanguageStrings"><i class="glyphicon glyphicon-question-sign"></i>  '
+				. '<a href="#dbgLanguageStrings"><i class="fa fa-eye-slash"></i>  '
 				. $badge . '/' . $this->getLabel($info->total)
 				. '</a></li>';
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . sprintf(g11n4t('One language file loaded', '%d language files loaded', $count), $count) . '">'
-				. '<a href="#dbgLanguageFiles"><i class="glyphicon glyphicon-book"></i> '
+				. '<a href="#dbgLanguageFiles"><i class="fa fa-list-alt"></i> '
 				. $this->getLabel($count)
 				. '</a></li>';
 		}
@@ -418,18 +418,31 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . g11n3t('User') . '">'
-				. '<a href="#dbgUser"><i class="glyphicon glyphicon-user"></i> <span class="label label-default">'
+				. '<a href="#dbgUser"><i class="fa fa-user"></i> <span class="label label-default">'
 				. ($user && $user->username ? $user->username : g11n3t('Guest'))
 				. '</span></a></li>';
 
 			$navigation[] = '<li class="hasTooltip"'
 				. ' title="' . g11n3t('Project') . '">'
-				. '<a href="#dbgProject"><i class="glyphicon glyphicon-tag"></i> <span class="badge">'
+				. '<a href="#dbgProject"><i class="fa fa-tag"></i> <span class="badge">'
 				. $title
 				. '</span></a></li>';
 		}
 
 		$navigation[] = '</ul>';
+
+		$navigation[] = '<p class="navbar-right navbar-text">';
+
+		foreach (array('system', 'database', 'language', 'media') as $mode)
+		{
+			$color = $this->application->get('debug.' . $mode) ? ' style="color: orange;"' : '';
+
+			$navigation[] = '<i' . $color . ' class="fa fa-bug hasTooltip" title="' . $mode . '"></i>';
+
+		}
+
+		$navigation[] = '</p>';
+
 		$navigation[] = '</nav>';
 
 		return $navigation;
