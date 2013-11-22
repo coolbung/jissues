@@ -11,6 +11,7 @@
     "bootstrap-switch": "v1.8",
     "markitup": "1.1.14",
     "blueimp-tmpl": "2.4.0",
-    "less": "1.5.0"
+    "less": "1.5.0",
+    "font-awesome": "4.0.3"
  }
 }
