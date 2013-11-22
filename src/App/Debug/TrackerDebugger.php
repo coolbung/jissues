@@ -443,9 +443,13 @@ class TrackerDebugger implements LoggerAwareInterface
 			// Display the build to admins
 			if ($this->application->getUser()->isAdmin)
 			{
+				preg_match( '/-g([a-z0-9]{10})/', $build, $matches);
+
+				$hrefJIssues = $matches ? 'https://github.com/joomla/jissues/commit/' . $matches[1] : '';
+
 				$navigation[] = '<li class="hasTooltip"'
 					. ' title="' . g11n3t('Build') . '">'
-					. '<a href="#"><i class="icon icon-broadcast"></i> <span class="badge">'
+					. '<a href="' . $hrefJIssues . '"><i class="icon icon-broadcast"></i> <span class="badge">'
 					. $build
 					. '</span></a></li>';
 			}
