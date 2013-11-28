@@ -27,6 +27,7 @@ class IconsHtmlView extends AbstractTrackerHtmlView
 	 */
 	public function render()
 	{
+		// Glyph icons
 		$lines = file(JPATH_THEMES . '/vendor/bootstrap/less/glyphicons.less');
 
 		$icons = array();
@@ -45,6 +46,26 @@ class IconsHtmlView extends AbstractTrackerHtmlView
 		}
 
 		$this->renderer->set('icons', array_unique($icons));
+
+		// Font Awesome
+		$lines = file(JPATH_THEMES . '/vendor/font-awesome/css/font-awesome.css');
+
+		$icons = array();
+
+		foreach ($lines as $line)
+		{
+			if (preg_match('/.(fa-[a-z0-9\-]+):before/', $line, $matches))
+			{
+				if ('icon-bar' == $matches[1])
+				{
+					continue;
+				}
+
+				$icons[] = $matches[1];
+			}
+		}
+
+		$this->renderer->set('fa_icons', array_unique($icons));
 
 		return parent::render();
 	}

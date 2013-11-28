@@ -7,13 +7,26 @@
 
     <h2>{{ "Icons"|_ }}</h2>
 
+    <h3>Glyphicons</h3>
+
     <div class="row">
     {% for icon in icons %}
-        <div class="col-xs-1 well well-small">
-            <i style="font-size: 16px;" class="glyphicon {{ icon }}"></i>
+        <div class="col-xs-1 well well-small text-center" style="min-height: 130px;">
+            <i style="font-size: 24px;" class="glyphicon {{ icon }}"></i>
             {{ icon }}
         </div>
     {% endfor %}
+    </div>
+
+    <h3>Font Awesome</h3>
+
+    <div class="row">
+        {% for icon in fa_icons %}
+            <div class="col-xs-1 well well-small text-center" style="min-height: 130px;">
+                <i style="font-size: 24px;" class="fa {{ icon }}"></i><br />
+                {{ icon }}
+            </div>
+        {% endfor %}
     </div>
 
 {% endblock %}
