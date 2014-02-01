@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Tracker Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Tracker\Controller\Hooks;
@@ -31,8 +31,18 @@ use JTracker\Authentication\GitHub\GitHubLoginHelper;
 class ReceivePullsHook extends AbstractHookController
 {
 	/**
+	 * The type of hook being executed
+	 *
+	 * @var    string
+	 * @since  1.0
+	 */
+	protected $type = 'pulls';
+
+	/**
 	 * Data received from GitHub.
-	 * @var  object
+	 *
+	 * @var    object
+	 * @since  1.0
 	 */
 	protected $data;
 
@@ -66,7 +76,7 @@ class ReceivePullsHook extends AbstractHookController
 		catch (\RuntimeException $e)
 		{
 			$this->logger->error('Error checking the database for the GitHub ID:' . $e->getMessage());
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
 
 		// If the item is already in the database, update it; else, insert it.
@@ -162,13 +172,16 @@ class ReceivePullsHook extends AbstractHookController
 				)
 			);
 
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
+
+		$this->triggerEvent('onPullAfterCreate', $table, array('action' => $action));
 
 		// Pull the user's avatar if it does not exist
 		if (!file_exists(JPATH_THEMES . '/images/avatars/' . $this->data->user->login . '.png'))
 		{
-			GitHubLoginHelper::saveAvatar($this->data->user->login);
+			with(new GitHubLoginHelper($this->container, '', ''))
+				->saveAvatar($this->data->user->login);
 		}
 
 		// Add a reopen record to the activity table if the action is reopened
@@ -204,91 +217,6 @@ class ReceivePullsHook extends AbstractHookController
 				$this->data->number
 			)
 		);
-
-		// For joomla/joomla-cms, add PR-<branch> label
-		if ($action == 'opened' && $this->project->gh_user == 'joomla' && $this->project->gh_project == 'joomla-cms')
-		{
-			// Set some data
-			$issueLabel = 'PR-' . $this->data->base->ref;
-			$labelSet   = false;
-
-			// Get the labels for the pull's issue
-			try
-			{
-				$labels = $this->github->issues->get($this->project->gh_user, $this->project->gh_project, $this->data->number)->labels;
-			}
-			catch (\DomainException $e)
-			{
-				$this->logger->error(
-					sprintf(
-						'Error retrieving labels for GitHub item %s/%s #%d - %s',
-						$this->project->gh_user,
-						$this->project->gh_project,
-						$this->data->number,
-						$e->getMessage()
-					)
-				);
-
-				$this->getApplication()->close();
-			}
-
-			// Check if the PR- label present
-			if (count($labels) > 0)
-			{
-				foreach ($labels as $label)
-				{
-					if (!$labelSet && $label->name == $issueLabel)
-					{
-						$this->logger->info(
-							sprintf(
-								'GitHub item %s/%s #%d already has the %s label.',
-								$this->project->gh_user,
-								$this->project->gh_project,
-								$this->data->number,
-								$issueLabel
-							)
-						);
-
-						$labelSet = true;
-					}
-				}
-			}
-
-			// Add the label if we need to
-			if (!$labelSet)
-			{
-				try
-				{
-					$this->github->issues->labels->add(
-						$this->project->gh_user, $this->project->gh_project, $this->data->number, array($issueLabel)
-					);
-
-					// Post the new label on the object
-					$this->logger->info(
-						sprintf(
-							'Added %s label to %s/%s #%d',
-							$issueLabel,
-							$this->project->gh_user,
-							$this->project->gh_project,
-							$this->data->number
-						)
-					);
-				}
-				catch (\DomainException $e)
-				{
-					$this->logger->error(
-						sprintf(
-							'Error adding the %s label to GitHub pull request %s/%s #%d - %s',
-							$issueLabel,
-							$this->project->gh_user,
-							$this->project->gh_project,
-							$this->data->number,
-							$e->getMessage()
-						)
-					);
-				}
-			}
-		}
 
 		return true;
 	}
@@ -363,8 +291,10 @@ class ReceivePullsHook extends AbstractHookController
 				)
 			);
 
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
+
+		$this->triggerEvent('onPullAfterUpdate', $table);
 
 		// Add a reopen record to the activity table if the status is reopened
 		if ($action == 'reopened')

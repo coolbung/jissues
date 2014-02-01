@@ -6,15 +6,13 @@
  * http://www.awcore.com/dev/1/3/Create-Awesome-PHPMYSQL-Pagination_en
  * and modified by "The Joomla! Tracker Project".
  *
- * @copyright  1234 abc
- * @license    1234 abc
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace JTracker\Pagination;
 
 use Joomla\Uri\Uri;
-
-use JTracker\Container;
 
 /**
  * Class TrackerPagination.
@@ -33,7 +31,7 @@ class TrackerPagination
 	 * @var    integer
 	 * @since  1.0
 	 */
-	protected $total;
+	protected $total = 0;
 
 	/**
 	 * Current page number.
@@ -41,7 +39,7 @@ class TrackerPagination
 	 * @var    integer
 	 * @since  1.0
 	 */
-	protected $page;
+	protected $page = 0;
 
 	/**
 	 * Items per page.
@@ -49,7 +47,7 @@ class TrackerPagination
 	 * @var    integer
 	 * @since  1.0
 	 */
-	protected $perPage;
+	protected $perPage = 0;
 
 	/**
 	 * The current URI.
@@ -62,19 +60,33 @@ class TrackerPagination
 	/**
 	 * Constructor.
 	 *
-	 * @param   integer  $total    Total items count.
-	 * @param   integer  $current  The current item number.
-	 * @param   integer  $perPage  Items per page.
+	 * @param   Uri  $uri  The URI object.
 	 *
 	 * @since   1.0
 	 */
-	public function __construct($total, $current, $perPage)
+	public function __construct(Uri $uri)
 	{
-		$app = Container::retrieve('app');
+		$this->uri     = $uri;
+	}
+
+	/**
+	 * Set required values.
+	 *
+	 * @param   integer  $total    Total items.
+	 * @param   integer  $current  Current item.
+	 * @param   integer  $perPage  Items per page.
+	 *
+	 * @return  $this  Method allows chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setValues($total, $current, $perPage)
+	{
 		$this->total   = $total;
 		$this->perPage = $perPage;
 		$this->page    = $current ? floor($current / $perPage) + 1 : 1;
-		$this->uri     = new Uri($app->get('uri.request'));
+
+		return $this;
 	}
 
 	/**
@@ -98,7 +110,7 @@ class TrackerPagination
 	 */
 	public function getPagesTotal()
 	{
-		return ceil($this->total / $this->perPage);
+		return ceil($this->total / ($this->perPage ? : 1));
 	}
 
 	/**

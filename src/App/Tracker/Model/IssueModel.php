@@ -2,22 +2,18 @@
 /**
  * Part of the Joomla Tracker's Tracker Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Tracker\Model;
 
-use App\Projects\Table\ProjectsTable;
 use App\Tracker\Table\ActivitiesTable;
 use App\Tracker\Table\IssuesTable;
 
 use Joomla\Filter\InputFilter;
-use Joomla\Registry\Registry;
-use Joomla\String\String;
 
 use JTracker\Model\AbstractTrackerDatabaseModel;
-use JTracker\Container;
 
 /**
  * Model to get data for the issue list view
@@ -47,25 +43,16 @@ class IssueModel extends AbstractTrackerDatabaseModel
 	 */
 	public function getItem($identifier = null)
 	{
-		$app = Container::retrieve('app');
-
 		if (!$identifier)
 		{
-			$identifier = $app->input->getUint('id');
-
-			if (!$identifier)
-			{
-				throw new \RuntimeException('No id given');
-			}
+			return new IssuesTable($this->db);
 		}
-
-		$project = $app->getProject();
 
 		$item = $this->db->setQuery(
 			$this->db->getQuery(true)
 				->select('i.*')
 				->from($this->db->quoteName('#__issues', 'i'))
-				->where($this->db->quoteName('i.project_id') . ' = ' . (int) $project->project_id)
+				->where($this->db->quoteName('i.project_id') . ' = ' . (int) $this->getProject()->project_id)
 				->where($this->db->quoteName('i.issue_number') . ' = ' . (int) $identifier)
 
 				// Join over the status table
@@ -106,7 +93,7 @@ class IssueModel extends AbstractTrackerDatabaseModel
 
 		$query->select('a.*');
 		$query->from($this->db->quoteName($table->getTableName(), 'a'));
-		$query->where($this->db->quoteName('a.project_id') . ' = ' . (int) $project->project_id);
+		$query->where($this->db->quoteName('a.project_id') . ' = ' . (int) $this->getProject()->project_id);
 		$query->where($this->db->quoteName('a.issue_number') . ' = ' . (int) $item->issue_number);
 		$query->order($this->db->quoteName('a.created_date'));
 
@@ -114,16 +101,16 @@ class IssueModel extends AbstractTrackerDatabaseModel
 
 		// Fetch foreign relations
 		$item->relations_f = $this->db->setQuery(
-				$this->db->getQuery(true)
-					->from($this->db->quoteName('#__issues', 'a'))
-					->join('LEFT', '#__issues_relations_types AS t ON a.rel_type = t.id')
-					->join('LEFT', '#__status AS s ON a.status = s.id')
-					->select('a.issue_number, a.title, a.rel_type')
-					->select('t.name AS rel_name')
-					->select('s.status AS status_title, s.closed AS closed')
-					->where($this->db->quoteName('a.rel_number') . '=' . (int) $item->issue_number)
-					->order(array('a.issue_number', 'a.rel_type'))
-			)->loadObjectList();
+			$this->db->getQuery(true)
+				->from($this->db->quoteName('#__issues', 'a'))
+				->join('LEFT', '#__issues_relations_types AS t ON a.rel_type = t.id')
+				->join('LEFT', '#__status AS s ON a.status = s.id')
+				->select('a.issue_number, a.title, a.rel_type')
+				->select('t.name AS rel_name')
+				->select('s.status AS status_title, s.closed AS closed')
+				->where($this->db->quoteName('a.rel_number') . '=' . (int) $item->issue_number)
+				->order(array('a.issue_number', 'a.rel_type'))
+		)->loadObjectList();
 
 		// Group relations by type
 		if ($item->relations_f)
@@ -154,34 +141,6 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		}
 
 		return $item;
-	}
-
-	/**
-	 * Get a project.
-	 *
-	 * @param   integer  $identifier  The project identifier.
-	 *
-	 * @return  ProjectsTable
-	 *
-	 * @since   1.0
-	 * @throws  \RuntimeException
-	 */
-	public function getProject($identifier = null)
-	{
-		if (!$identifier)
-		{
-			$app = Container::retrieve('app');
-			$identifier = $app->input->getUint('project_id');
-
-			if (!$identifier)
-			{
-				throw new \RuntimeException('No id given');
-			}
-		}
-
-		$table = new ProjectsTable($this->db);
-
-		return $table->load($identifier);
 	}
 
 	/**
@@ -287,7 +246,7 @@ class IssueModel extends AbstractTrackerDatabaseModel
 		$db    = $this->getDb();
 		$query = $db->getQuery(true);
 
-		$table = new IssuesTable($db);
+		$table = new IssuesTable($this->db);
 		$table->load($id);
 
 		// Insert a new record if no vote_id is associated
@@ -318,22 +277,33 @@ class IssueModel extends AbstractTrackerDatabaseModel
 
 		$db->setQuery($query)->execute();
 
+		$insertId = $db->insertid();
+
 		// Add the vote_id if a new record
 		if (is_null($table->vote_id))
 		{
 			$query->clear()
 				->update($db->quoteName('#__issues'))
-				->set($db->quoteName('vote_id') . ' = ' . $db->insertid())
+				->set($db->quoteName('vote_id') . ' = ' . (int) $insertId)
 				->where($db->quoteName('id') . ' = ' . (int) $table->id);
 
 			$db->setQuery($query)->execute();
 		}
 
 		// Get the updated vote data to update the display
+		if (is_null($table->vote_id))
+		{
+			$voteId = $insertId;
+		}
+		else
+		{
+			$voteId = $table->vote_id;
+		}
+
 		$query->clear()
 			->select('*')
 			->from($db->quoteName('#__issues_voting'))
-			->where($db->quoteName('id') . ' = ' . (int) $table->vote_id);
+			->where($db->quoteName('id') . ' = ' . (int) $voteId);
 
 		return $db->setQuery($query)->loadObject();
 	}

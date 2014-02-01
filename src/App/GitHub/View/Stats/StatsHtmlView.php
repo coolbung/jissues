@@ -2,14 +2,12 @@
 /**
  * Part of the Joomla Tracker's GitHub Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\GitHub\View\Stats;
 
-use App\Projects\Model\ProjectModel;
-use Joomla\Github\Github;
 use JTracker\View\AbstractTrackerHtmlView;
 
 /**
@@ -28,6 +26,14 @@ class StatsHtmlView extends AbstractTrackerHtmlView
 	protected $config;
 
 	/**
+	 * Data object for the view
+	 *
+	 * @var    object
+	 * @since  1.0
+	 */
+	protected $data = null;
+
+	/**
 	 * Method to render the view.
 	 *
 	 * @return  string  The rendered view.
@@ -36,20 +42,44 @@ class StatsHtmlView extends AbstractTrackerHtmlView
 	 */
 	public function render()
 	{
-		$projectModel = new ProjectModel;
-
-		$project = $projectModel->getByAlias();
-
-		$gitHub = new Github;
-
-		$data = $gitHub->repositories->statistics->getListContributors(
-			$project->gh_user, $project->gh_project
-		);
-
 		$this->renderer
-			->set('data', $data)
-			->set('project', $project);
+			->set('data', $this->getData())
+			->set('project', $this->getProject());
 
 		return parent::render();
+	}
+
+	/**
+	 * Get the data object.
+	 *
+	 * @return  object
+	 *
+	 * @since   1.0
+	 * @throws  \UnexpectedValueException
+	 */
+	public function getData()
+	{
+		if (is_null($this->data))
+		{
+			throw new \UnexpectedValueException('Data not set.');
+		}
+
+		return $this->data;
+	}
+
+	/**
+	 * Set the data.
+	 *
+	 * @param   object  $data  The data object.
+	 *
+	 * @return  $this  Method allows chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setData($data)
+	{
+		$this->data = $data;
+
+		return $this;
 	}
 }

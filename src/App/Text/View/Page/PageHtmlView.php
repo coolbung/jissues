@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Text Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Text\View\Page;
@@ -12,7 +12,6 @@ use App\Text\Model\PageModel;
 
 use JTracker\Router\Exception\RoutingException;
 use JTracker\View\AbstractTrackerHtmlView;
-use JTracker\Container;
 
 /**
  * Page view class
@@ -24,10 +23,18 @@ class PageHtmlView extends AbstractTrackerHtmlView
 	/**
 	 * Redefine the model so the correct type hinting is available.
 	 *
-	 * @var     PageModel
-	 * @since   1.0
+	 * @var    PageModel
+	 * @since  1.0
 	 */
 	protected $model;
+
+	/**
+	 * The page alias.
+	 *
+	 * @var    string
+	 * @since  1.0
+	 */
+	protected $alias = '';
 
 	/**
 	 * Method to render the view.
@@ -39,22 +46,51 @@ class PageHtmlView extends AbstractTrackerHtmlView
 	 */
 	public function render()
 	{
-		/* @type \JTracker\Application $application */
-		$application = Container::retrieve('app');
-
-		$alias = $application->input->getCmd('alias');
-
 		try
 		{
-			$item = $this->model->getItem($alias);
+			$item = $this->model->getItem($this->getAlias());
 		}
 		catch (\RuntimeException $e)
 		{
-			throw new RoutingException($alias);
+			throw new RoutingException($this->getAlias());
 		}
 
 		$this->renderer->set('page', $item->getIterator());
 
 		return parent::render();
+	}
+
+	/**
+	 * Get the page alias.
+	 *
+	 * @return  string
+	 *
+	 * @since   1.0
+	 * @throws  \RuntimeException
+	 */
+	public function getAlias()
+	{
+		if ('' == $this->alias)
+		{
+			throw new \RuntimeException('Alias not set.');
+		}
+
+		return $this->alias;
+	}
+
+	/**
+	 * Set the page alias.
+	 *
+	 * @param   string  $alias  The page alias.
+	 *
+	 * @return  $this  Method supports chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setAlias($alias)
+	{
+		$this->alias = $alias;
+
+		return $this;
 	}
 }

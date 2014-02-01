@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Groups Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Groups\Model;
@@ -13,7 +13,6 @@ use App\Groups\Table\GroupsTable;
 use Joomla\Database\DatabaseQuery;
 
 use JTracker\Model\AbstractTrackerListModel;
-use JTracker\Container;
 
 /**
  * Model to get data for the groups list view
@@ -31,8 +30,7 @@ class GroupsModel extends AbstractTrackerListModel
 	 */
 	protected function getListQuery()
 	{
-		$app = Container::retrieve('app');
-		$projectId = $app->getProject()->project_id;
+		$projectId = $this->getProject()->project_id;
 
 		$db    = $this->getDb();
 		$query = $db->getQuery(true);

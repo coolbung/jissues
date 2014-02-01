@@ -2,15 +2,15 @@
 /**
  * Part of the Joomla Tracker's Debug Application
  *
- * @copyright  Copyright (C) 2013 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Debug\Database;
 
 use App\Debug\Format\Html\TableFormat;
+
 use Joomla\Database\DatabaseDriver;
-use JTracker\Container;
 
 /**
  * Class DatabaseDebugger.
@@ -107,7 +107,7 @@ class DatabaseDebugger
 	 */
 	public function getProfile($query)
 	{
-		$db = Container::retrieve('db');
+		$db = $this->database;
 
 		// Run a SHOW PROFILE query:
 		$profile = '';

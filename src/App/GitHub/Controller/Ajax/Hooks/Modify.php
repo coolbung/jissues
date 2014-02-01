@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's GitHub Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\GitHub\Controller\Ajax\Hooks;
@@ -12,7 +12,6 @@ use Joomla\Application\AbstractApplication;
 use Joomla\Input\Input;
 
 use JTracker\Controller\AbstractAjaxController;
-use JTracker\Container;
 
 /**
  * Controller class to modify webhooks on the GitHub repository.
@@ -41,7 +40,7 @@ class Modify extends AbstractAjaxController
 	{
 		parent::__construct($input, $app);
 
-		$this->github = Container::retrieve('gitHub');
+		$this->github = $this->container->get('gitHub');
 	}
 
 	/**
@@ -53,12 +52,12 @@ class Modify extends AbstractAjaxController
 	 */
 	protected function prepareResponse()
 	{
-		$this->getApplication()->getUser()->authorize('admin');
+		$this->container->get('app')->getUser()->authorize('admin');
 
-		$action = $this->getInput()->getCmd('action');
-		$hookId = $this->getInput()->getInt('hook_id');
+		$action = $this->container->get('app')->input->getCmd('action');
+		$hookId = $this->container->get('app')->input->getInt('hook_id');
 
-		$project = $this->getApplication()->getProject();
+		$project = $this->container->get('app')->getProject();
 
 		// Get a valid hook object
 		$hook = $this->getHook($hookId);
@@ -84,14 +83,14 @@ class Modify extends AbstractAjaxController
 	 * @param   string  $action  The action to perform.
 	 * @param   object  $hook    The hook object.
 	 *
-	 * @return  $this
+	 * @return  $this  Method allows chaining
 	 *
 	 * @since   1.0
 	 * @throws  \RuntimeException
 	 */
 	private function processAction($action, $hook)
 	{
-		$project = $this->getApplication()->getProject();
+		$project = $this->container->get('app')->getProject();
 
 		switch ($action)
 		{
@@ -136,7 +135,7 @@ class Modify extends AbstractAjaxController
 	 */
 	private function getHook($hookId)
 	{
-		$project = $this->getApplication()->getProject();
+		$project = $this->container->get('app')->getProject();
 
 		$hooks = $this->github->repositories->hooks->getList($project->gh_user, $project->gh_project);
 

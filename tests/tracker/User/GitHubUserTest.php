@@ -2,11 +2,15 @@
 /**
  * Part of the Joomla! Tracker Package.
  *
- * @copyright  Copyright (C) 2013 - 2013 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace Joomla\Tracker\Tests\Authentication\GitHub;
+
+use App\Projects\TrackerProject;
+
+use Joomla\Database\Mysqli\MysqliDriver;
 
 use JTracker\Authentication\GitHub\GitHubUser;
 
@@ -32,7 +36,11 @@ class GitHubUserTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
-		$this->object = new GitHubUser;
+		$options = array();
+		$driver  = new MysqliDriver($options);
+		$project = new TrackerProject($driver);
+
+		$this->object = new GitHubUser($project, $driver);
 	}
 
 	/**

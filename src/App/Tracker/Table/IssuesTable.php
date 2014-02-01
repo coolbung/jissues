@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Tracker Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Tracker\Table;
@@ -14,8 +14,8 @@ use Joomla\Filter\InputFilter;
 use Joomla\Date\Date;
 use Joomla\Utilities\ArrayHelper;
 
+use JTracker\Authentication\GitHub\GitHubUser;
 use JTracker\Database\AbstractDatabaseTable;
-use JTracker\Container;
 
 /**
  * Table interface class for the #__issues table
@@ -64,18 +64,26 @@ class IssuesTable extends AbstractDatabaseTable
 	 * @var    IssuesTable
 	 * @since  1.0
 	 */
-	protected $oldObject;
+	protected $oldObject = null;
+
+	/**
+	 * User object
+	 *
+	 * @var    GitHubUser
+	 * @since  1.0
+	 */
+	protected $user = null;
 
 	/**
 	 * Constructor
 	 *
-	 * @param   DatabaseDriver  $db  A database connector object
+	 * @param   DatabaseDriver  $database  A database connector object.
 	 *
 	 * @since   1.0
 	 */
-	public function __construct(DatabaseDriver $db)
+	public function __construct(DatabaseDriver $database)
 	{
-		parent::__construct('#__issues', 'id', $db);
+		parent::__construct('#__issues', 'id', $database);
 	}
 
 	/**
@@ -195,9 +203,6 @@ class IssuesTable extends AbstractDatabaseTable
 	 */
 	public function store($updateNulls = false)
 	{
-		/* @type \JTracker\Application $application */
-		$application = Container::retrieve('app');
-
 		$isNew = ($this->id < 1);
 		$date  = new Date;
 		$date  = $date->format($this->db->getDateFormat());
@@ -212,7 +217,7 @@ class IssuesTable extends AbstractDatabaseTable
 
 			if (!$this->modified_by)
 			{
-				$this->modified_by = $application->getUser()->username;
+				$this->modified_by = $this->getUser()->username;
 			}
 		}
 		else
@@ -389,5 +394,39 @@ class IssuesTable extends AbstractDatabaseTable
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * Get the user.
+	 *
+	 * @return  GitHubUser
+	 *
+	 * @since   1.0
+	 * @throws  \RuntimeException
+	 */
+	public function getUser()
+	{
+		if (is_null($this->user))
+		{
+			throw new \RuntimeException('User not set');
+		}
+
+		return $this->user;
+	}
+
+	/**
+	 * Set the user.
+	 *
+	 * @param   GitHubUser  $user  The user.
+	 *
+	 * @return  $this  Method allows chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setUser(GitHubUser $user)
+	{
+		$this->user = $user;
+
+		return $this;
 	}
 }

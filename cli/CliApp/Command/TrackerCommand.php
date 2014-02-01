@@ -2,19 +2,18 @@
 /**
  * Part of the Joomla! Tracker application.
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace CliApp\Command;
 
-use App\Projects\Model\ProjectsModel;
+use App\Projects\TrackerProject;
 
 use CliApp\Exception\AbortException;
 
-use JTracker\Container;
-
-use Monolog\Logger;
+use Joomla\DI\Container;
+use Joomla\DI\ContainerAwareInterface;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -24,20 +23,20 @@ use Psr\Log\LoggerInterface;
  *
  * @since  1.0
  */
-abstract class TrackerCommand implements LoggerAwareInterface
+abstract class TrackerCommand implements LoggerAwareInterface, ContainerAwareInterface
 {
 	/**
-	 * Application object.
+	 * Container object.
 	 *
-	 * @var    \CliApp\Application\CliApplication
+	 * @var    Container
 	 * @since  1.0
 	 */
-	protected $application;
+	protected $container;
 
 	/**
 	 * Logger object.
 	 *
-	 * @var    Logger
+	 * @var    \Monolog\Logger
 	 * @since  1.0
 	 */
 	protected $logger;
@@ -67,20 +66,20 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	protected $usePBar;
 
 	/**
+	 * The project object.
+	 *
+	 * @var    TrackerProject
+	 * @since  1.0
+	 */
+	protected $project;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since   1.0
 	 */
 	public function __construct()
 	{
-		$this->application = Container::retrieve('app');
-		$this->logger      = Container::retrieve('logger');
-		$this->usePBar     = $this->application->get('cli-application.progress-bar');
-
-		if ($this->application->input->get('noprogress'))
-		{
-			$this->usePBar = false;
-		}
 	}
 
 	/**
@@ -133,7 +132,7 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	 */
 	protected function out($text = '', $nl = true)
 	{
-		$this->application->out($text, $nl);
+		$this->getApplication()->out($text, $nl);
 
 		return $this;
 	}
@@ -149,7 +148,7 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	 */
 	protected function debugOut($text)
 	{
-		$this->application->debugOut($text);
+		$this->getApplication()->debugOut($text);
 
 		return $this;
 	}
@@ -166,7 +165,7 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	protected function logOut($text)
 	{
 		// Send text to the logger and remove color chars.
-		$this->logger->info(preg_replace('/\<[a-z\/]+\>/', '', $text));
+		$this->getLogger()->info(preg_replace('/\<[a-z\/]+\>/', '', $text));
 
 		return $this;
 	}
@@ -198,6 +197,64 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	}
 
 	/**
+	 * Get the DI container.
+	 *
+	 * @return  Container
+	 *
+	 * @since   1.0
+	 * @throws  \UnexpectedValueException May be thrown if the container has not been set.
+	 */
+	public function getContainer()
+	{
+		if (is_null($this->container))
+		{
+			throw new \UnexpectedValueException('Container not set');
+		}
+
+		return $this->container;
+	}
+
+	/**
+	 * Set the DI container.
+	 *
+	 * @param   Container  $container  The DI container.
+	 *
+	 * @return  $this
+	 *
+	 * @since   1.0
+	 */
+	public function setContainer(Container $container)
+	{
+		$this->container = $container;
+
+		return $this;
+	}
+
+	/**
+	 * Get the application object.
+	 *
+	 * @return  \CliApp\Application\CliApplication
+	 *
+	 * @since   1.0
+	 */
+	protected function getApplication()
+	{
+		return $this->getContainer()->get('app');
+	}
+
+	/**
+	 * Get the logger object.
+	 *
+	 * @return  \Psr\Log\LoggerInterface
+	 *
+	 * @since   1.0
+	 */
+	protected function getLogger()
+	{
+		return $this->getContainer()->get('logger');
+	}
+
+	/**
 	 * Display the GitHub rate limit.
 	 *
 	 * @return  $this
@@ -206,7 +263,7 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	 */
 	protected function displayGitHubRateLimit()
 	{
-		$this->application->displayGitHubRateLimit();
+		$this->getApplication()->displayGitHubRateLimit();
 
 		return $this;
 	}
@@ -222,7 +279,7 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	 */
 	protected function getProgressBar($targetNum)
 	{
-		return $this->application->getProgressBar($targetNum);
+		return $this->getApplication()->getProgressBar($targetNum);
 	}
 
 	/**
@@ -236,9 +293,21 @@ abstract class TrackerCommand implements LoggerAwareInterface
 	 */
 	protected function selectProject()
 	{
-		$projects = with(new ProjectsModel(Container::getInstance()->get('db')))->getItems();
+		/* @type \Joomla\Database\DatabaseDriver $db */
+		$db = $this->getContainer()->get('db');
 
-		$id = $this->application->input->getInt('project', $this->application->input->getInt('p'));
+		$projects = $db->setQuery(
+			$db->getQuery(true)
+				->from($db->quoteName('#__tracker_projects'))
+				->select(array('project_id', 'title', 'gh_user', 'gh_project'))
+
+		)->loadObjectList();
+/*
+		$projectsModel = new ProjectsModel($this->getContainer()->get('db'), $this->getApplication()->input);
+		$user = new GitHubUser($this->getApplication()->getp);
+		$projects = with()->getItems();
+*/
+		$id = $this->getApplication()->input->getInt('project', $this->getApplication()->input->getInt('p'));
 
 		if (!$id)
 		{
@@ -263,7 +332,7 @@ abstract class TrackerCommand implements LoggerAwareInterface
 			$this->out()
 				->out('<question>Select a project:</question> ', false);
 
-			$resp = (int) trim($this->application->in());
+			$resp = (int) trim($this->getApplication()->in());
 
 			if (!$resp)
 			{
@@ -298,5 +367,37 @@ abstract class TrackerCommand implements LoggerAwareInterface
 		$this->logOut('Processing project: <info>' . $this->project->title . '</info>');
 
 		return $this;
+	}
+
+	/**
+	 * Execute a command on the server.
+	 *
+	 * @param   string  $command  The command to execute.
+	 *
+	 * @return string
+	 *
+	 * @since   1.0
+	 * @throws \RuntimeException
+	 */
+	protected function execCommand($command)
+	{
+		$lastLine = system($command, $status);
+
+		if ($status)
+		{
+			// Command exited with a status != 0
+			if ($lastLine)
+			{
+				$this->logOut($lastLine);
+
+				throw new \RuntimeException($lastLine);
+			}
+
+			$this->logOut('An unknown error occurred');
+
+			throw new \RuntimeException('An unknown error occurred');
+		}
+
+		return $lastLine;
 	}
 }

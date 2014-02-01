@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Text Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Text\View\Article;
@@ -12,7 +12,6 @@ use App\Text\Model\ArticleModel;
 use App\Text\Table\ArticlesTable;
 
 use JTracker\View\AbstractTrackerHtmlView;
-use JTracker\Container;
 
 /**
  * Article view class
@@ -30,6 +29,14 @@ class ArticleHtmlView extends AbstractTrackerHtmlView
 	protected $model;
 
 	/**
+	 * Table object with article data
+	 *
+	 * @var    ArticlesTable
+	 * @since  1.0
+	 */
+	protected $item = null;
+
+	/**
 	 * Method to render the view.
 	 *
 	 * @return  string  The rendered view.
@@ -38,17 +45,36 @@ class ArticleHtmlView extends AbstractTrackerHtmlView
 	 */
 	public function render()
 	{
-		/* @type \JTracker\Application $application */
-		$application = Container::retrieve('app');
-
-		$id = $application->input->getInt('id');
-
-		$item = $id
-			? $this->model->getItem($id)
-			: new ArticlesTable(Container::retrieve('db'));
-
-		$this->renderer->set('item', $item);
+		$this->renderer->set('item', $this->getItem());
 
 		return parent::render();
+	}
+
+	/**
+	 * Get the item.
+	 *
+	 * @return  ArticlesTable
+	 *
+	 * @since   1.0
+	 */
+	public function getItem()
+	{
+		return $this->item;
+	}
+
+	/**
+	 * Set the item.
+	 *
+	 * @param   ArticlesTable  $item  The item.
+	 *
+	 * @return  $this  Method supports chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setItem($item)
+	{
+		$this->item = $item;
+
+		return $this;
 	}
 }

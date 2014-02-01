@@ -2,12 +2,16 @@
 /**
  * Part of the Joomla! Tracker application.
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace CliApp\Application;
 
+use CliApp\Command\Help\Help;
+use App\Projects\TrackerProject;
+
+use CliApp\Command\TrackerCommand;
 use CliApp\Command\TrackerCommandOption;
 use CliApp\Exception\AbortException;
 use CliApp\Service\GitHubProvider;
@@ -19,21 +23,26 @@ use Elkuku\Console\Helper\ConsoleProgressBar;
 use Joomla\Application\AbstractCliApplication;
 use Joomla\Application\Cli\ColorProcessor;
 use Joomla\Application\Cli\ColorStyle;
+use Joomla\DI\Container;
+use Joomla\DI\ContainerAwareInterface;
+use Joomla\Event\Dispatcher;
+use Joomla\Event\DispatcherAwareInterface;
+use Joomla\Event\DispatcherInterface;
 use Joomla\Input;
 use Joomla\Registry\Registry;
 
 use JTracker\Authentication\GitHub\GitHubUser;
-use JTracker\Container;
 use JTracker\Service\ConfigurationProvider;
 use JTracker\Service\DatabaseProvider;
 use JTracker\Service\DebuggerProvider;
+use JTracker\Service\TransifexProvider;
 
 /**
  * CLI application for installing the tracker application
  *
  * @since  1.0
  */
-class CliApplication extends AbstractCliApplication
+class CliApplication extends AbstractCliApplication implements DispatcherAwareInterface
 {
 	/**
 	 * Quiet mode - no output.
@@ -76,6 +85,22 @@ class CliApplication extends AbstractCliApplication
 	protected $commandOptions = array();
 
 	/**
+	 * DI Container
+	 *
+	 * @var    Container
+	 * @since  1.0
+	 */
+	private $container = null;
+
+	/**
+	 * Event Dispatcher
+	 *
+	 * @var    Dispatcher
+	 * @since  1.0
+	 */
+	private $dispatcher;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param   Input\Cli  $input   An optional argument to provide dependency injection for the application's
@@ -92,13 +117,14 @@ class CliApplication extends AbstractCliApplication
 		parent::__construct($input, $config);
 
 		// Build the DI Container
-		Container::getInstance()
+		$this->container = with(new Container)
 			->registerServiceProvider(new ApplicationProvider($this))
 			->registerServiceProvider(new ConfigurationProvider($this->config))
 			->registerServiceProvider(new DatabaseProvider)
 			->registerServiceProvider(new GitHubProvider)
 			->registerServiceProvider(new DebuggerProvider)
-			->registerServiceProvider(new LoggerProvider($this->input->get('log'), $this->input->get('quiet', $this->input->get('q'))));
+			->registerServiceProvider(new LoggerProvider($this->input->get('log'), $this->input->get('quiet', $this->input->get('q'))))
+			->registerServiceProvider(new TransifexProvider);
 
 		$this->commandOptions[] = new TrackerCommandOption(
 			'quiet', 'q',
@@ -113,6 +139,11 @@ class CliApplication extends AbstractCliApplication
 		$this->commandOptions[] = new TrackerCommandOption(
 			'nocolors', '',
 			'Suppress ANSI colors on unsupported terminals.'
+		);
+
+		$this->commandOptions[] = new TrackerCommandOption(
+			'--log=filename.log', '',
+			'Optionally log output to the specified log file.'
 		);
 
 		/* @type ColorProcessor $processor */
@@ -135,6 +166,9 @@ class CliApplication extends AbstractCliApplication
 		{
 			$this->usePBar = false;
 		}
+
+		// Register the global dispatcher
+		$this->setDispatcher(new Dispatcher);
 	}
 
 	/**
@@ -178,8 +212,18 @@ class CliApplication extends AbstractCliApplication
 		if (false == class_exists($className))
 		{
 			$this->out()
-				->out('<error>Invalid command</error>: ' . (($command == $action) ? $command : $command . ' ' . $action))
+				->out('Invalid command: <error> ' . (($command == $action) ? $command : $command . ' ' . $action) . ' </error>')
 				->out();
+
+			$alternatives = $this->getAlternatives($command, $action);
+
+			if (count($alternatives))
+			{
+				$this->out('<b>Did you mean one of this?</b>')
+					->out('    <question> ' . implode(' </question>    <question> ', $alternatives) . ' </question>');
+
+				return;
+			}
 
 			$className = 'CliApp\\Command\\Help\\Help';
 		}
@@ -191,7 +235,15 @@ class CliApplication extends AbstractCliApplication
 
 		try
 		{
-			with(new $className($this))->execute();
+			/* @type TrackerCommand $command */
+			$command = new $className;
+
+			if ($command instanceof ContainerAwareInterface)
+			{
+				$command->setContainer($this->container);
+			}
+
+			$command->execute();
 		}
 		catch (AbortException $e)
 		{
@@ -208,6 +260,77 @@ class CliApplication extends AbstractCliApplication
 				)
 			)
 			->out(str_repeat('_', 40));
+	}
+
+	/**
+	 * Get alternatives for a not found command or action.
+	 *
+	 * @param   string  $command  The command.
+	 * @param   string  $action   The action.
+	 *
+	 * @return  array
+	 *
+	 * @since   1.0
+	 */
+	protected function getAlternatives($command, $action)
+	{
+		$commands = with(new Help)->getCommands();
+		$alternatives = array();
+
+		if (false == array_key_exists($command, $commands))
+		{
+			// Unknown command
+			foreach (array_keys($commands) as $cmd)
+			{
+				if (levenshtein($cmd, $command) <= strlen($cmd) / 3 || false !== strpos($cmd, $command))
+				{
+					$alternatives[] = $cmd;
+				}
+			}
+		}
+		else
+		{
+			// Known command - unknown action
+			$actions = with(new Help)->getActions($command);
+
+			foreach (array_keys($actions) as $act)
+			{
+				if (levenshtein($act, $action) <= strlen($act) / 3 || false !== strpos($act, $action))
+				{
+					$alternatives[] = $command . ' ' . $act;
+				}
+			}
+		}
+
+		return $alternatives;
+	}
+
+	/**
+	 * Get the dispatcher object.
+	 *
+	 * @return  Dispatcher
+	 *
+	 * @since   1.0
+	 */
+	public function getDispatcher()
+	{
+		return $this->dispatcher;
+	}
+
+	/**
+	 * Set the dispatcher to use.
+	 *
+	 * @param   DispatcherInterface  $dispatcher  The dispatcher to use.
+	 *
+	 * @return  $this  Method allows chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setDispatcher(DispatcherInterface $dispatcher)
+	{
+		$this->dispatcher = $dispatcher;
+
+		return $this;
 	}
 
 	/**
@@ -291,7 +414,10 @@ class CliApplication extends AbstractCliApplication
 	public function getUser()
 	{
 		// Urgh..
-		$user = new GitHubUser;
+		$user = new GitHubUser(
+			new TrackerProject($this->container->get('db')),
+			$this->container->get('db')
+		);
 		$user->isAdmin = true;
 
 		return $user;
@@ -309,7 +435,7 @@ class CliApplication extends AbstractCliApplication
 		$this->out()
 			->out('<info>GitHub rate limit:...</info> ', false);
 
-		$rate = Container::retrieve('gitHub')->authorization->getRateLimit()->resources->core;
+		$rate = $this->container->get('gitHub')->authorization->getRateLimit()->resources->core;
 
 		$this->out(sprintf('%1$d (remaining: <b>%2$d</b>)', $rate->limit, $rate->remaining))
 			->out();

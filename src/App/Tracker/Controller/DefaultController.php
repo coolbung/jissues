@@ -2,37 +2,61 @@
 /**
  * Part of the Joomla Tracker's Tracker Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Tracker\Controller;
 
-use Joomla\Application\AbstractApplication;
-use Joomla\Input\Input;
-use JTracker\Controller\AbstractTrackerController;
+use App\Tracker\Model\IssuesModel;
+use App\Tracker\View\Issues\IssuesHtmlView;
+
+use JTracker\Controller\AbstractTrackerListController;
 
 /**
  * Default controller class for the Tracker component.
  *
  * @since  1.0
  */
-class DefaultController extends AbstractTrackerController
+class DefaultController extends AbstractTrackerListController
 {
 	/**
-	 * Constructor
+	 * View object
 	 *
-	 * @param   Input                $input  The input object.
-	 * @param   AbstractApplication  $app    The application object.
+	 * @var    IssuesHtmlView
+	 * @since  1.0
+	 */
+	protected $view;
+
+	/**
+	 * Model object
+	 *
+	 * @var    IssuesModel
+	 * @since  1.0
+	 */
+	protected $model;
+
+	/**
+	 * The default view for the app
+	 *
+	 * @var    string
+	 * @since  1.0
+	 */
+	protected $defaultView = 'issues';
+
+	/**
+	 * Initialize the controller.
+	 *
+	 * @return  $this  Method supports chaining
 	 *
 	 * @since   1.0
 	 */
-	public function __construct(Input $input = null, AbstractApplication $app = null)
+	public function initialize()
 	{
-		parent::__construct($input, $app);
+		parent::initialize();
 
-		// Set the default view
-		$this->defaultView = 'issues';
+		$this->model->setProject($this->container->get('app')->getProject());
+		$this->view->setProject($this->container->get('app')->getProject());
 	}
 
 	/**
@@ -44,11 +68,14 @@ class DefaultController extends AbstractTrackerController
 	 */
 	public function execute()
 	{
-		if ($this->getApplication()->getProject()->project_id)
+		/* @type \JTracker\Application $application */
+		$application = $this->container->get('app');
+
+		if ($application->getProject()->project_id)
 		{
-			$this->getApplication()->getUser()->authorize('view');
+			$application->getUser()->authorize('view', $application->getProject());
 		}
 
-		parent::execute();
+		return parent::execute();
 	}
 }

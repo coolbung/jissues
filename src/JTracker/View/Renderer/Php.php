@@ -2,15 +2,14 @@
 /**
  * Part of the Joomla Tracker View Package
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace JTracker\View\Renderer;
 
 use Joomla\Registry\Registry;
 use Joomla\View\Renderer\RendererInterface;
-use JTracker\Container;
 
 /**
  * PHP view renderer
@@ -56,7 +55,7 @@ class Php implements RendererInterface
 
 		$this->debug   = JDEBUG;
 		$this->globals = new Registry;
-		$app = Container::retrieve('app');
+		$app = $this->container->get('app');
 
 		$this->set('uri', $app->get('uri'));
 	}

@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker Database Package
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace JTracker\Database;
@@ -64,7 +64,8 @@ class AbstractDatabaseTable implements \IteratorAggregate
 	 * for a particular database table.
 	 *
 	 * @param   string          $table  Name of the table to model.
-	 * @param   mixed           $keys   Name of the primary key field in the table or array of field names that compose the primary key.
+	 * @param   mixed           $keys   Name of the primary key field in the table or array of field names that
+	 *                                  compose the primary key.
 	 * @param   DatabaseDriver  $db     DatabaseDriver object.
 	 *
 	 * @since   1.0

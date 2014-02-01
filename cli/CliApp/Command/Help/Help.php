@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla! Tracker application.
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace CliApp\Command\Help;
@@ -47,19 +47,19 @@ class Help extends TrackerCommand
 	public function execute()
 	{
 		/* @type ColorProcessor $processor */
-		$processor = $this->application->getOutput()->getProcessor();
+		$processor = $this->getApplication()->getOutput()->getProcessor();
 
 		$processor
 			->addStyle('cmd', new ColorStyle('magenta'))
 			->addStyle('opt', new ColorStyle('cyan'));
 
-		$executable = basename($this->application->input->executable);
+		$executable = basename($this->getApplication()->input->executable);
 
 		$this->commands = $this->getCommands();
 
-		if (isset($this->application->input->args[1]))
+		if (isset($this->getApplication()->input->args[1]))
 		{
-			$this->helpCommand($this->application->input->args[1]);
+			$this->helpCommand($this->getApplication()->input->args[1]);
 
 			return;
 		}
@@ -90,7 +90,7 @@ class Help extends TrackerCommand
 		$this->out('<b>For more information use</b> <info>' . $executable . ' help</info> <cmd><command></cmd>.')
 			->out();
 
-		$options = $this->application->getCommandOptions();
+		$options = $this->getApplication()->getCommandOptions();
 
 		if ($options)
 		{
@@ -117,7 +117,7 @@ class Help extends TrackerCommand
 		if (false == array_key_exists($command, $this->commands))
 		{
 			$this->out()
-				->out('Unknown command: ' . $command);
+				->out('Unknown: ' . $command);
 
 			return;
 		}
@@ -193,8 +193,9 @@ class Help extends TrackerCommand
 	 * @return  array
 	 *
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
-	private function getCommands()
+	public function getCommands()
 	{
 		$commands = array();
 
@@ -210,7 +211,12 @@ class Help extends TrackerCommand
 
 			$className = "CliApp\\Command\\$c\\$c";
 
-			$commands[strtolower($c)] = new $className($this->application);
+			if (false == class_exists($className))
+			{
+				throw new \RuntimeException(sprintf('Required class "%s" not found.', $className));
+			}
+
+			$commands[strtolower($c)] = new $className($this->container);
 		}
 
 		return $commands;
@@ -225,7 +231,7 @@ class Help extends TrackerCommand
 	 *
 	 * @since   1.0
 	 */
-	protected function getActions($commandName)
+	public function getActions($commandName)
 	{
 		$actions = array();
 		$cName = ucfirst($commandName);
@@ -246,7 +252,7 @@ class Help extends TrackerCommand
 			{
 				$className = "CliApp\\Command\\$cName\\$action";
 
-				$actions[strtolower($action)] = new $className($this->application);
+				$actions[strtolower($action)] = new $className($this->container);
 			}
 		}
 

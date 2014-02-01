@@ -2,12 +2,13 @@
 /**
  * Part of the Joomla! Tracker application.
  *
- * @copyright  Copyright (C) 2013 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace CliApp\Command\Make;
 
+use CliApp\Command\Help\Help;
 use CliApp\Command\TrackerCommand;
 
 /**
@@ -34,11 +35,11 @@ class Autocomplete extends Make
 	 */
 	public function execute()
 	{
-		$this->application->outputTitle('Make Auto complete');
+		$this->getApplication()->outputTitle('Make Auto complete');
 
 		$cliBase = JPATH_ROOT . '/cli/CliApp/Command';
 
-		$helper = new Helper($this->application);
+		$helper = new Help;
 
 		$xml = simplexml_load_string(
 			'<framework xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
@@ -64,10 +65,9 @@ class Autocomplete extends Make
 				$className = $commandName . '\\' . $command;
 
 				/* @type TrackerCommand $class */
-				$class = new $className($this->application);
+				$class = new $className($this->getApplication());
 
-				$help = $class->getDescription();
-				$help = str_replace(array('<cmd>', '</cmd>', '<', '>'), '', $help);
+				$help = str_replace(array('<cmd>', '</cmd>', '<', '>'), '', $class->getDescription());
 
 				$xmlCommand = $xml->addChild('command');
 
@@ -84,7 +84,7 @@ class Autocomplete extends Make
 				/* @type TrackerCommand $option */
 				foreach ($actions as $name => $option)
 				{
-					$help = $option->getDescription();
+					$help = str_replace(array('<cmd>', '</cmd>', '<', '>'), '', $option->getDescription());
 
 					$xmlCommand = $xml->addChild('command');
 					$xmlCommand->addChild('name', strtolower($command) . ' ' . strtolower($name));
@@ -101,33 +101,22 @@ class Autocomplete extends Make
 
 		$doc->appendChild($domNode);
 
-		echo $doc->saveXML();
+		$contents = $doc->saveXML();
+
+		$fileName = $this->getApplication()->input->getPath('file', $this->getApplication()->input->getPath('f'));
+
+		if ($fileName)
+		{
+			$this->out('Writing contents to: ' . $fileName);
+
+			file_put_contents($fileName, $contents);
+		}
+		else
+		{
+			echo $contents;
+		}
 
 		$this->out()
 			->out('Finished =;)');
-	}
-}
-
-/**
- * Class Helper.
- *
- * Dummy class to expose a protected method.
- *
- * @since  1.0
- */
-class Helper extends \CliApp\Command\Help\Help
-{
-	/**
-	 * Get available actions for a command.
-	 *
-	 * @param   string  $commandName  The command name.
-	 *
-	 * @return  array
-	 *
-	 * @since   1.0
-	 */
-	public function getActions($commandName)
-	{
-		return parent::getActions($commandName);
 	}
 }

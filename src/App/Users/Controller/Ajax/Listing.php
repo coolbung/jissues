@@ -2,19 +2,18 @@
 /**
  * Part of the Joomla Tracker's Users Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Users\Controller\Ajax;
 
 use JTracker\Controller\AbstractAjaxController;
-use JTracker\Container;
 
 /**
  * Default controller class for the Users component.
  *
- * @since    1.0
+ * @since  1.0
  */
 class Listing extends AbstractAjaxController
 {
@@ -30,13 +29,13 @@ class Listing extends AbstractAjaxController
 		// TODO: do we need access control here ?
 		// @$this->getApplication()->getUser()->authorize('admin');
 
-		$input = $this->getInput();
+		$input = $this->container->get('app')->input;
 
 		$groupId = $input->getInt('group_id');
 
 		if ($groupId)
 		{
-			$db = Container::retrieve('db');
+			$db = $this->container->get('db');
 
 			$query = $db->getQuery(true)
 				->select($db->quoteName(array('u.id', 'u.username')))

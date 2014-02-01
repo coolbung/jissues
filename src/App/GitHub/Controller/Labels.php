@@ -2,14 +2,13 @@
 /**
  * Part of the Joomla Tracker's GitHub Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\GitHub\Controller;
 
-use Joomla\Application\AbstractApplication;
-use Joomla\Input\Input;
+use App\GitHub\View\Labels\LabelsHtmlView;
 
 use JTracker\Controller\AbstractTrackerController;
 
@@ -21,24 +20,29 @@ use JTracker\Controller\AbstractTrackerController;
 class Labels extends AbstractTrackerController
 {
 	/**
-	 * The default view for the component
+	 * View object
 	 *
-	 * @var    string
+	 * @var    LabelsHtmlView
 	 * @since  1.0
 	 */
-	protected $defaultView = 'labels';
+	protected $view;
 
 	/**
-	 * Execute the controller.
+	 * Initialize the controller.
 	 *
-	 * @return  string  The rendered view.
+	 * @return  $this  Method allows chaining
 	 *
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
-	public function execute()
+	public function initialize()
 	{
-		$this->getApplication()->getUser()->authorize('admin');
+		parent::initialize();
 
-		parent::execute();
+		$this->container->get('app')->getUser()->authorize('admin');
+
+		$this->view->setProject($this->container->get('app')->getProject());
+
+		return $this;
 	}
 }

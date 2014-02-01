@@ -2,14 +2,15 @@
 /**
  * Part of the Joomla Tracker's Tracker Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Tracker\Controller\Issue\Ajax;
 
 use App\Tracker\Model\IssueModel;
 
+use Joomla\Input\Input;
 use JTracker\Controller\AbstractAjaxController;
 
 /**
@@ -29,9 +30,12 @@ class Vote extends AbstractAjaxController
 	 */
 	protected function prepareResponse()
 	{
-		$issue       = $this->getInput()->getUint('issueId');
-		$experienced = $this->getInput()->getInt('experienced');
-		$importance  = $this->getInput()->getInt('importance');
+		/* @type Input $input */
+		$input = $this->container->get('app')->input;
+
+		$issue       = $input->getUint('issueId');
+		$experienced = $input->getInt('experienced');
+		$importance  = $input->getInt('importance');
 
 		if (!$issue)
 		{
@@ -43,7 +47,7 @@ class Vote extends AbstractAjaxController
 			throw new \Exception('Issue importance not received');
 		}
 
-		$model = new IssueModel;
+		$model = new IssueModel($this->container->get('db'));
 
 		$data = $model->vote($issue, $experienced, $importance);
 

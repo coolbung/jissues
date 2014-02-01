@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Text Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Text\Table;
@@ -11,8 +11,8 @@ namespace App\Text\Table;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Filter\OutputFilter;
 
+use Joomla\Github\Github;
 use JTracker\Database\AbstractDatabaseTable;
-use JTracker\Container;
 
 /**
  * Table interface class for the #__articles table
@@ -28,6 +28,14 @@ use JTracker\Container;
  */
 class ArticlesTable extends AbstractDatabaseTable
 {
+	/**
+	 * Github object
+	 *
+	 * @var    Github
+	 * @since  1.0
+	 */
+	protected $gitHub = null;
+
 	/**
 	 * Constructor
 	 *
@@ -120,13 +128,44 @@ class ArticlesTable extends AbstractDatabaseTable
 			$this->created_date = with(new \DateTime)->format('Y-m-d H:i:s');
 		}
 
-		/* @type \Joomla\Github\Github $gitHub */
-		$gitHub = Container::retrieve('gitHub');
-
 		// Render markdown
-		$this->text = $gitHub->markdown
+		$this->text = $this->getGitHub()->markdown
 			->render($this->text_md);
 
 		return parent::store($updateNulls);
+	}
+
+	/**
+	 * Get the GitHub object.
+	 *
+	 * @return  Github
+	 *
+	 * @since   1.0
+	 * @throws  \UnexpectedValueException
+	 */
+	public function getGitHub()
+	{
+		if (is_null($this->gitHub))
+		{
+			throw new \UnexpectedValueException('GitHub object not set.');
+		}
+
+		return $this->gitHub;
+	}
+
+	/**
+	 * Set the GitHub object.
+	 *
+	 * @param   Github  $gitHub  The GitHub object.
+	 *
+	 * @return  $this  Method supports chaining
+	 *
+	 * @since   1.0
+	 */
+	public function setGitHub(Github $gitHub)
+	{
+		$this->gitHub = $gitHub;
+
+		return $this;
 	}
 }

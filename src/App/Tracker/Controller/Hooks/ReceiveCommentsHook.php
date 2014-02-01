@@ -2,17 +2,18 @@
 /**
  * Part of the Joomla Tracker's Tracker Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Tracker\Controller\Hooks;
 
+use App\Tracker\Controller\AbstractHookController;
 use App\Tracker\Table\ActivitiesTable;
+use App\Tracker\Table\IssuesTable;
+
 use Joomla\Date\Date;
 
-use App\Tracker\Controller\AbstractHookController;
-use App\Tracker\Table\IssuesTable;
 use JTracker\Authentication\GitHub\GitHubLoginHelper;
 
 /**
@@ -22,6 +23,14 @@ use JTracker\Authentication\GitHub\GitHubLoginHelper;
  */
 class ReceiveCommentsHook extends AbstractHookController
 {
+	/**
+	 * The type of hook being executed
+	 *
+	 * @var    string
+	 * @since  1.0
+	 */
+	protected $type = 'comments';
+
 	/**
 	 * Execute the controller.
 	 *
@@ -46,7 +55,7 @@ class ReceiveCommentsHook extends AbstractHookController
 		catch (\RuntimeException $e)
 		{
 			$this->logger->error('Error checking the database for comment ID:' . $e->getMessage());
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
 
 		// If the item is already in the database, update it; else, insert it
@@ -85,7 +94,7 @@ class ReceiveCommentsHook extends AbstractHookController
 		catch (\RuntimeException $e)
 		{
 			$this->logger->error('Error checking the database for GitHub ID:' . $e->getMessage());
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
 
 		// If we don't have an ID, we need to insert the issue and all comments, or we only insert the newly received comment
@@ -135,7 +144,8 @@ class ReceiveCommentsHook extends AbstractHookController
 			// Pull the user's avatar if it does not exist
 			if (!file_exists(JPATH_THEMES . '/images/avatars/' . $this->hookData->comment->user->login . '.png'))
 			{
-				GitHubLoginHelper::saveAvatar($this->hookData->comment->user->login);
+				with(new GitHubLoginHelper($this->container, '', ''))
+					->saveAvatar($this->hookData->comment->user->login);
 			}
 		}
 
@@ -215,13 +225,16 @@ class ReceiveCommentsHook extends AbstractHookController
 				)
 			);
 
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
+
+		$this->triggerEvent('onCommentAfterCreate', $table);
 
 		// Pull the user's avatar if it does not exist
 		if (!file_exists(JPATH_THEMES . '/images/avatars/' . $this->hookData->issue->user->login . '.png'))
 		{
-			GitHubLoginHelper::saveAvatar($this->hookData->issue->user->login);
+			with(new GitHubLoginHelper($this->container, '', ''))
+				->saveAvatar($this->hookData->issue->user->login);
 		}
 
 		// Add a close record to the activity table if the status is closed
@@ -281,8 +294,10 @@ class ReceiveCommentsHook extends AbstractHookController
 				'Error updating the database for comment ' . $id . ':' . $e->getMessage()
 			);
 
-			$this->getApplication()->close();
+			$this->container->get('app')->close();
 		}
+
+		$this->triggerEvent('onCommentAfterUpdate', $table);
 
 		// Store was successful, update status
 		$this->logger->info(

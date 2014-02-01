@@ -2,19 +2,18 @@
 /**
  * Part of the Joomla Tracker's Users Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Users\Controller\Ajax;
 
 use JTracker\Controller\AbstractAjaxController;
-use JTracker\Container;
 
 /**
  * Default controller class for the Users component.
  *
- * @since    1.0
+ * @since  1.0
  */
 class Search extends AbstractAjaxController
 {
@@ -27,7 +26,7 @@ class Search extends AbstractAjaxController
 	 */
 	protected function prepareResponse()
 	{
-		$input = $this->getInput();
+		$input = $this->container->get('app')->input;
 
 		$search       = $input->get('query');
 		$inGroupId    = $input->getInt('in_group_id');
@@ -35,7 +34,7 @@ class Search extends AbstractAjaxController
 
 		if ($search)
 		{
-			$db = Container::retrieve('db');
+			$db = $this->container->get('db');
 
 			$query = $db->getQuery(true)
 				->select('DISTINCT ' . $db->quoteName('u.username'))

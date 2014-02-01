@@ -2,15 +2,15 @@
 /**
  * Part of the Joomla Tracker View Package
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace JTracker\View\Renderer;
 
 use g11n\g11n;
 
-use JTracker\Container;
+use Joomla\DI\Container;
 
 /**
  * Twig extension class
@@ -19,6 +19,24 @@ use JTracker\Container;
  */
 class TrackerExtension extends \Twig_Extension
 {
+	/**
+	 * @var    Container
+	 * @since  1.0
+	 */
+	private $container = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param   Container  $container  The DI container.
+	 *
+	 * @since   1.0
+	 */
+	public function __construct(Container $container)
+	{
+		$this->container = $container;
+	}
+
 	/**
 	 * Returns the name of the extension.
 	 *
@@ -40,14 +58,11 @@ class TrackerExtension extends \Twig_Extension
 	 */
 	public function getGlobals()
 	{
-		/* @var \JTracker\Application $app */
-		$app = Container::retrieve('app');
-
 		return array(
-			'uri'    => $app->get('uri'),
+			'uri'    => $this->container->get('app')->get('uri'),
 			'jdebug' => JDEBUG,
 			'lang'   => g11n::getCurrent(),
-			'languages' => $app->get('languages')
+			'languages' => $this->container->get('app')->get('languages')
 		);
 	}
 
@@ -128,10 +143,7 @@ class TrackerExtension extends \Twig_Extension
 	 */
 	public function fetchAvatar($userName = '', $width = 0, $class = '')
 	{
-		/* @type \JTracker\Application $app */
-		$app = Container::retrieve('app');
-
-		$base = $app->get('uri.base.path');
+		$base = $this->container->get('app')->get('uri.base.path');
 
 		$avatar = $userName ? $userName . '.png' : 'user-default.png';
 
@@ -204,7 +216,7 @@ class TrackerExtension extends \Twig_Extension
 
 		if (!$statuses)
 		{
-			$db = Container::retrieve('db');
+			$db = $this->container->get('db');
 
 			$items = $db->setQuery(
 				$db->getQuery(true)
@@ -263,10 +275,7 @@ class TrackerExtension extends \Twig_Extension
 
 		if (!$labels)
 		{
-			/* @type \JTracker\Application $application */
-			$application = Container::retrieve('app');
-
-			$labels = $application->getProject()->getLabels();
+			$labels = $this->container->get('app')->getProject()->getLabels();
 		}
 
 		$html = array();
@@ -279,15 +288,17 @@ class TrackerExtension extends \Twig_Extension
 			{
 				$bgColor = $labels[$id]->color;
 				$color   = $this->getContrastColor($bgColor);
+				$name    = $labels[$id]->name;
 			}
 			else
 			{
 				$bgColor = '000000';
 				$color   = 'ffffff';
+				$name    = '?';
 			}
 
 			$html[] = '<span class="label"' . ' style="background-color: #' . $bgColor . '; color: ' . $color . ';">';
-			$html[] = $labels[$id]->name;
+			$html[] = $name;
 			$html[] = '</span>';
 		}
 
@@ -307,13 +318,11 @@ class TrackerExtension extends \Twig_Extension
 	 */
 	public function issueLink($number, $closed, $title = '')
 	{
-		/* @type \JTracker\Application $application */
-		$application = Container::retrieve('app');
-
 		$html = array();
 
 		$title = ($title) ? : ' #' . $number;
-		$href = $application->get('uri')->base->path . 'tracker/' . $application->getProject()->alias . '/' . $number;
+		$href = $this->container->get('app')->get('uri')->base->path
+			. 'tracker/' . $this->container->get('app')->getProject()->alias . '/' . $number;
 
 		$html[] = '<a href="' . $href . '"' . ' title="' . $title . '"' . '>';
 		$html[] = $closed ? '<del># ' . $number . '</del>' : '# ' . $number;
@@ -335,7 +344,7 @@ class TrackerExtension extends \Twig_Extension
 
 		if (!$relTypes)
 		{
-			$db = Container::retrieve('db');
+			$db = $this->container->get('db');
 
 			$relTypes = $db->setQuery(
 				$db->getQuery(true)
@@ -349,11 +358,11 @@ class TrackerExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Create a translated tes/no string.
+	 * Generate a localized yes/no message.
 	 *
-	 * @param   mixed  $value  A value that evaluates to PHP true/false..
+	 * @param   integer  $value  A value that evaluates to TRUE or FALSE.
 	 *
-	 * @return string
+	 * @return  string
 	 *
 	 * @since   1.0
 	 */

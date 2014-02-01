@@ -2,18 +2,19 @@
 /**
  * Part of the Joomla Tracker Authentication Package
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace JTracker\Authentication;
+
+use App\Projects\TrackerProject;
 
 use Joomla\Database\DatabaseDriver;
 use Joomla\Date\Date;
 
 use JTracker\Authentication\Database\TableUsers;
 use JTracker\Authentication\Exception\AuthenticationException;
-use JTracker\Container;
 
 /**
  * Abstract class containing the application user object
@@ -32,6 +33,7 @@ abstract class User implements \Serializable
 
 	/**
 	 * User name.
+	 *
 	 * @var    string
 	 * @since  1.0
 	 */
@@ -86,14 +88,35 @@ abstract class User implements \Serializable
 	private $cleared = array();
 
 	/**
+	 * Database object
+	 *
+	 * @var    DatabaseDriver
+	 * @since  1.0
+	 */
+	protected $database = null;
+
+	/**
+	 * Project object
+	 *
+	 * @var    TrackerProject
+	 * @since  1.0
+	 */
+	protected $project = null;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param   integer  $identifier  The primary key of the user to load..
+	 * @param   TrackerProject  $project     The tracker project.
+	 * @param   DatabaseDriver  $database    The database connector.
+	 * @param   integer         $identifier  The primary key of the user to load..
 	 *
 	 * @since   1.0
 	 */
-	public function __construct($identifier = 0)
+	public function __construct(TrackerProject $project, DatabaseDriver $database, $identifier = 0)
 	{
+		$this->setDatabase($database);
+		$this->project  = $project;
+
 		// Load the user if it exists
 		if ($identifier)
 		{
@@ -112,7 +135,7 @@ abstract class User implements \Serializable
 	 */
 	public function loadByUserName($userName)
 	{
-		$db = Container::retrieve('db');
+		$db = $this->database;
 
 		$table = new TableUsers($db);
 
@@ -158,11 +181,11 @@ abstract class User implements \Serializable
 	 */
 	protected function load($identifier)
 	{
-		$db = Container::retrieve('db');
+		// $db = $this->database;
 
 		// Create the user table object
 		// $table = $this->getTable();
-		$table = new TableUsers($db);
+		$table = new TableUsers($this->database);
 
 		// Load the JUserModel object based on the user id or throw a warning.
 		if (!$table->load($identifier))
@@ -206,7 +229,7 @@ abstract class User implements \Serializable
 	 */
 	protected function loadAccessGroups()
 	{
-		$db = Container::retrieve('db');
+		$db = $this->database;
 
 		$this->accessGroups = $db->setQuery(
 			$db->getQuery(true)
@@ -288,9 +311,7 @@ abstract class User implements \Serializable
 		}
 
 		/* @type \App\Projects\TrackerProject $project */
-		/* @type \JTracker\Application $app */
-		$app = Container::retrieve('app');
-		$project = $app->getProject();
+		$project = $this->getProject();
 
 		if ($project->getAccessGroups($action, 'Public'))
 		{
@@ -343,7 +364,7 @@ abstract class User implements \Serializable
 
 		foreach (get_object_vars($this) as $key => $value)
 		{
-			if (in_array($key, array('authModel', 'cleared', 'authId')))
+			if (in_array($key, array('authModel', 'cleared', 'authId', 'database')))
 			{
 				continue;
 			}
@@ -371,5 +392,37 @@ abstract class User implements \Serializable
 		{
 			$this->$key = $value;
 		}
+	}
+
+	/**
+	 * Get the project.
+	 *
+	 * @return  \App\Projects\TrackerProject
+	 *
+	 * @since   1.0
+	 * @throws  \UnexpectedValueException
+	 */
+	public function getProject()
+	{
+		if (is_null($this->project))
+		{
+			throw new \UnexpectedValueException('Project not set.');
+		}
+
+		return $this->project;
+	}
+
+	/**
+	 * Method to set the database connector.
+	 *
+	 * @param   DatabaseDriver  $database  The Database connector.
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
+	public function setDatabase(DatabaseDriver $database)
+	{
+		$this->database = $database;
 	}
 }

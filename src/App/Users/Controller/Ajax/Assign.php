@@ -2,15 +2,14 @@
 /**
  * Part of the Joomla Tracker's Users Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Users\Controller\Ajax;
 
 use JTracker\Authentication\Database\TableUsers;
 use JTracker\Controller\AbstractAjaxController;
-use JTracker\Container;
 
 /**
  * Controller class to assign users to groups
@@ -29,13 +28,13 @@ class Assign extends AbstractAjaxController
 	 */
 	protected function prepareResponse()
 	{
-		if (false == $this->getApplication()->getUser()->check('manage'))
+		if (false == $this->container->get('app')->getUser()->check('manage'))
 		{
 			throw new \Exception('You are not authorized');
 		}
 
-		$input = $this->getInput();
-		$db    = Container::retrieve('db');
+		$input = $this->container->get('app')->input;
+		$db    = $this->container->get('db');
 
 		$user    = $input->getCmd('user');
 		$groupId = $input->getInt('group_id');
@@ -46,7 +45,7 @@ class Assign extends AbstractAjaxController
 			throw new \Exception('Missing group id');
 		}
 
-		$tableUsers = new TableUsers($db);
+		$tableUsers = new TableUsers($this->container->get('db'));
 
 		$tableUsers->loadByUserName($user);
 
@@ -99,7 +98,7 @@ class Assign extends AbstractAjaxController
 	 */
 	private function assign($userId, $groupId)
 	{
-		$db = Container::retrieve('db');
+		$db = $this->container->get('db');
 
 		$data = array(
 			$db->quoteName('user_id')  => (int) $userId,
@@ -128,7 +127,7 @@ class Assign extends AbstractAjaxController
 	 */
 	private function unAssign($userId, $groupId)
 	{
-		$db = Container::retrieve('db');
+		$db = $this->container->get('db');
 
 		$db->setQuery(
 			$db->getQuery(true)

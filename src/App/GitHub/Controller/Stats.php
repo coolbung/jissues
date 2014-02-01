@@ -2,11 +2,15 @@
 /**
  * Part of the Joomla Tracker's GitHub Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\GitHub\Controller;
+
+use App\GitHub\View\Stats\StatsHtmlView;
+
+use Joomla\Github\Github;
 
 use JTracker\Controller\AbstractTrackerController;
 
@@ -18,10 +22,36 @@ use JTracker\Controller\AbstractTrackerController;
 class Stats extends AbstractTrackerController
 {
 	/**
-	 * The default view for the component
+	 * View object
 	 *
-	 * @var    string
+	 * @var    StatsHtmlView
 	 * @since  1.0
 	 */
-	protected $defaultView = 'stats';
+	protected $view;
+
+	/**
+	 * Initialize the controller.
+	 *
+	 * @return  $this  Method allows chaining
+	 *
+	 * @since   1.0
+	 * @throws  \RuntimeException
+	 */
+	public function initialize()
+	{
+		parent::initialize();
+
+		$project = $this->container->get('app')->getProject();
+
+		$gitHub = new Github;
+
+		$data = $gitHub->repositories->statistics->getListContributors(
+			$project->gh_user, $project->gh_project
+		);
+
+		$this->view->setProject($project);
+		$this->view->setData($data);
+
+		return $this;
+	}
 }

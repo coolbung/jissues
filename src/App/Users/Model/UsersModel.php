@@ -2,8 +2,8 @@
 /**
  * Part of the Joomla Tracker's Users Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\Users\Model;
@@ -11,7 +11,6 @@ namespace App\Users\Model;
 use Joomla\Database\DatabaseQuery;
 
 use JTracker\Model\AbstractTrackerListModel;
-use JTracker\Container;
 
 /**
  * Users model class for the Users component.
@@ -29,9 +28,6 @@ class UsersModel extends AbstractTrackerListModel
 	 */
 	protected function getListQuery()
 	{
-		$app = Container::retrieve('app');
-		$app->mark('Fetch users list');
-
 		return $this->db->getQuery(true)
 			->select(array('id', 'username'))
 			->from('#__users');

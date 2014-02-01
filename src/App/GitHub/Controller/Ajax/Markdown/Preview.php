@@ -2,14 +2,13 @@
 /**
  * Part of the Joomla Tracker's GitHub Application
  *
- * @copyright  Copyright (C) 2012 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @copyright  Copyright (C) 2012 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @license    http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License Version 2 or Later
  */
 
 namespace App\GitHub\Controller\Ajax\Markdown;
 
 use JTracker\Controller\AbstractAjaxController;
-use JTracker\Container;
 
 /**
  * Controller class to render a text entry in GitHub Flavored Markdown format.
@@ -29,22 +28,22 @@ class Preview extends AbstractAjaxController
 	protected function prepareResponse()
 	{
 		// Only registered users are able to use the preview using their credentials.
-		if (!$this->getApplication()->getUser()->id)
+		if (!$this->container->get('app')->getUser()->id)
 		{
 			throw new \Exception('not auth..');
 		}
 
-		$text = $this->getInput()->get('text', '', 'raw');
+		$text = $this->container->get('app')->input->get('text', '', 'raw');
 
 		if (!$text)
 		{
 			throw new \Exception('Nothing to preview...');
 		}
 
-		$project = $this->getApplication()->getProject();
+		$project = $this->container->get('app')->getProject();
 
 		/* @type \Joomla\Github\Github $github */
-		$github = Container::retrieve('gitHub');
+		$github = $this->container->get('gitHub');
 
 		$this->response->data = $github->markdown->render(
 			$text,
