@@ -424,20 +424,14 @@ class TrackerDebugger implements LoggerAwareInterface
 
 			$title = $project ? $project->title : g11n3t('No Project');
 
-			// Add build commit if available
-			$buildHref = '#';
-
 			if (file_exists(JPATH_ROOT . '/current_SHA'))
 			{
+				// Add build commit if available
 				$build = trim(file_get_contents(JPATH_ROOT . '/current_SHA'));
-				preg_match('/-g([0-9a-z]+)/', $build, $matches);
-				$buildHref = $matches
-					? 'https://github.com/joomla/jissues/commit/' . $matches[1]
-					: '#';
 			}
-			// Fall back to composer.json version
 			else
 			{
+				// Fall back to composer.json version
 				$composer = json_decode(trim(file_get_contents(JPATH_ROOT . '/composer.json')));
 				$build    = $composer->version;
 			}
@@ -454,19 +448,15 @@ class TrackerDebugger implements LoggerAwareInterface
 				. $title
 				. '</span></a></li>';
 
-			// Display the build to admins
-			if ($this->application->getUser()->isAdmin)
-			{
-				preg_match( '/-g([a-z0-9]{10})/', $build, $matches);
+			// Display the build
+			preg_match( '/-g([a-z0-9]{10})/', $build, $matches);
 
-				$hrefJIssues = $matches ? 'https://github.com/joomla/jissues/commit/' . $matches[1] : '';
-
-				$navigation[] = '<li class="hasTooltip"'
-					. ' title="' . g11n3t('Build') . '">'
-					. '<a href="' . $buildHref . '"><i class="icon icon-broadcast"></i> <span class="badge">'
-					. $build
-					. '</span></a></li>';
-			}
+			$navigation[] = '<li class="hasTooltip"'
+				. ' title="' . g11n3t('Build') . '">'
+				. '<a href="' . ($matches ? 'https://github.com/joomla/jissues/commit/' . $matches[1] : '#') . '">'
+				. '<i class="icon icon-broadcast"></i> <span class="badge">'
+				. $build
+				. '</span></a></li>';
 		}
 
 		$navigation[] = '</ul>';
