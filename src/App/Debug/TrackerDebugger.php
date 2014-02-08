@@ -108,7 +108,7 @@ class TrackerDebugger implements LoggerAwareInterface
 			$handler = new ProductionHandler;
 		}
 
-		with(new Run)
+		(new Run)
 			->pushHandler($handler)
 			->register();
 	}
@@ -135,7 +135,7 @@ class TrackerDebugger implements LoggerAwareInterface
 				)
 			);
 
-			$logger->pushProcessor(array($this, 'addDatabaseEntry'));
+			$logger->pushProcessor([$this, 'addDatabaseEntry']);
 			$logger->pushProcessor(new WebProcessor);
 
 			$db = $this->container->get('db');
@@ -397,7 +397,7 @@ class TrackerDebugger implements LoggerAwareInterface
 		if ($this->application->get('debug.language'))
 		{
 			$info = $this->getLanguageStringsInfo();
-			$badge = $this->getLabel($info->untranslateds, array(1 => 'label-warning'));
+			$badge = $this->getLabel($info->untranslateds, [1 => 'label-warning']);
 			$count = count(g11n::getEvents());
 
 			$navigation[] = '<li class="hasTooltip"'

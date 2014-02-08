@@ -154,29 +154,25 @@
             <span class="icon-calendar"></span> {{ item.opened_date|date("j M Y") }}
         </div>
 
-        <div class="span7 well-small issue-description">
+        <div class="{{ item.votes or user.id ? "span7" : "span10" }} well-small issue-description">
             {{ item.description|raw }}
         </div>
 
+        {% if item.votes or user.id %}
         <div class="span3 well">
-            {% if item.vote_id %}
-            <table>
-                <tr>
-                    <th>{{ "# of Votes"|_ }}</th>
-                    <td id="votes">{{ item.votes }}</td>
-                </tr>
-                <tr>
-                    <th>{{ "# of Users Experiencing Issue"|_ }}</th>
-                    <td id="experienced">{{ item.experienced }}</td>
-                </tr>
-                <tr>
-                    <th>{{ "Average Importance Score"|_ }}</th>
-                    <td id="importance">{{ item.importanceScore|number_format(2) }}</td>
-                </tr>
-            </table>
-            <hr />
+            {% if item.votes %}
+            <div class="row-fluid">
+                <div class="span10"><b>{{ "# of Users Experiencing Issue"|_ }}</b></div>
+                <div id="experienced" class="span2">{{ item.experienced }}/{{ item.votes }}</div>
+            </div>
+            <div class="row-fluid">
+                <div class="span10"><b>{{ "Average Importance Score"|_ }}</b></div>
+                <div id="importance" class="span2">{{ item.importanceScore|number_format(2) }}</div>
+            </div>
+            <hr class="issue-votes" />
             {% endif %}
-            <form class="form-inline" name="voteForm">
+            {% if user.id %}
+            <form class="form-inline scores-report" name="voteForm">
                 <fieldset>
                     <p>{{ "I've experienced this issue"|_ }}</p>
                     <label class="radio">
@@ -188,7 +184,7 @@
                          {{ "No"|_ }}
                     </label>
                 </fieldset>
-                <hr />
+                <hr class="issue-votes" />
                 <fieldset>
                     <p>{{ "Importance of issue to me"|_ }}</p>
                     <label class="radio">
@@ -212,12 +208,14 @@
                         5
                     </label>
                 </fieldset>
-                <hr />
+                <hr class="issue-votes" />
                 <a href="javascript:" class="btn btn-primary" id="voteButton" onclick="JTracker.submitVote('{{ item.id }}', '#voteButton');">
                     {{ "Vote"|_ }}
                 </a>
             </form>
+            {% endif %}
         </div>
+        {% endif %}
     </div>
 
     <!-- Activity stream -->

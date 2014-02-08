@@ -6,7 +6,7 @@
     "license": "GPL-2.0+",
     "version": "1.0.0-beta",
     "require": {
-        "php": ">=5.3.10",
+        "php": ">=5.4.4",
         "joomla/application": "1.0.*@stable",
         "joomla/controller": "1.0.*@stable",
         "joomla/database": "1.0.*@stable",
@@ -36,7 +36,8 @@
         "monolog/monolog": "1.6.0",
         "raveren/kint": "0.9",
         "filp/whoops": "1.0.*@stable",
-        "mustache/mustache" : "2.1.*",
+        "mustache/mustache": "2.1.*",
+        "phpunit/phpunit"  : "3.7.*",
         "squizlabs/php_codesniffer": "1.*"
     },
     "autoload": {
