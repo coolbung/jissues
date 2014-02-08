@@ -32,7 +32,13 @@
     </li>
     </ul>
 {% else %}
+    {% if loginUrl %}
         <a class="btn btn-success navbar-btn" href="{{ loginUrl }}">
             {{ "Login with GitHub"|_ }}
         </a>
+    {% else %}
+        <a class="btn btn-danger navbar-btn" href="#">
+            {{ 'No GitHub credentials set in config'|_ }}
+        </a>
+    {% endif %}
 {% endif %}
